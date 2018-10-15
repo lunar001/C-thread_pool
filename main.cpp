@@ -7,6 +7,9 @@
 void func()
 {
 	log_info("hello world\n");
+	log_warning("hello world\n");
+	log_error("hello world\n");
+	log_debug("hello world\n");
 
 }
 
@@ -14,8 +17,8 @@ int main()
 {
 	CThread cthread(func);
 	cthread.startThread();
-	cthread.destroyThread();
 	cthread.join();
+	cthread.destroyThread();
 
 	return 0;
 }
