@@ -1,3 +1,5 @@
+#ifndef C_THREAD_HEADER
+#define C_THREAD_HEADER
 #include "Thread.h"
 
 #include <pthread.h>
@@ -8,34 +10,29 @@ struct CthreadData
 {
 public:
 	CthreadData(const Thread::Func & func)
-		:func_
+		:func_(func)
 	{}
-	~CthreadData()
-	{}
-private:
 
 	Thread::Func func_;
 
 
-}
+};
 
-void * runThread(void * arg)
-{
-	CthreadData * data = static_cast<CthreadData *> arg;
-	data->runc_();
-	return (void * )0;
-}
+void * runThread(void * arg);
 class CThread : Thread
 {
 public:
-	Cthread(const Func & func)
+	CThread(const Func & func)
 		:Thread(func), tid_(0), data_(0)
 	{}
-	virtual ~Cthread()
+	virtual ~CThread()
 	{}
 	void startThread();
+	void destroyThread();
 	void join();
 private:
 	pthread_t tid_;
 	CthreadData * data_;
-}
+};
+
+#endif
