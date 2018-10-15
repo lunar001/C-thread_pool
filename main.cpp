@@ -3,6 +3,7 @@
 #include <iostream>
 #include <functional>
 #include "Cthread.h"
+#include "CPPThread.h"
 
 void func()
 {
@@ -19,6 +20,11 @@ int main()
 	cthread.startThread();
 	cthread.join();
 	cthread.destroyThread();
+	CPPThread cppthread(func);
+	cppthread.startThread();
+	cppthread.join();
+	cppthread.destroyThread();	
+
 
 	return 0;
 }
