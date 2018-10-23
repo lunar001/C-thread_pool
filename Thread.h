@@ -13,6 +13,7 @@ public:
 	Thread(const Func &func)
 		:func_(func)
 	{}
+	Thread(const Thread & self) = delete;
 	virtual ~Thread()
 	{}
 	/* pure virtual function,     */ 
