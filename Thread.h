@@ -14,6 +14,11 @@ public:
 		:func_(func)
 	{}
 	Thread(const Thread & self) = delete;
+	Thread(Thread && self)
+	{
+		func_ = std::move(self.func_);
+	}
+
 	virtual ~Thread()
 	{}
 	/* pure virtual function,     */ 
