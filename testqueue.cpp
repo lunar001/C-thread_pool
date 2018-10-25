@@ -10,7 +10,7 @@
 
 #define NUM 100000
 
-Thread_Queue<int> q;
+ThreadQueue<int> q;
 void push_func()
 {
 	/* push_func will generate random number and push it into q*/

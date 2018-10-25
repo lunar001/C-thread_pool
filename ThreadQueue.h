@@ -8,7 +8,7 @@
 #include <condition_variable>
 
 template <typename T>    
-class Thread_Queue
+class ThreadQueue
 {
 public:
 
@@ -25,7 +25,7 @@ private:
 };
 
 template <typename T>
-void Thread_Queue<T>::wait_and_pop( T & value)
+void ThreadQueue<T>::wait_and_pop( T & value)
 {
 	std::unique_lock<std::mutex> lk(mx_);
 	cv_.wait(lk, [this] { return !data_queue_.empty();}); /* don't need check condition in while after wait*/
@@ -34,7 +34,7 @@ void Thread_Queue<T>::wait_and_pop( T & value)
 }
 
 template <typename T>
-bool Thread_Queue<T>::try_pop( T & value)
+bool ThreadQueue<T>::try_pop( T & value)
 {
 	std::lock_guard<std::mutex> lk(mx_);
 	if(data_queue_.empty())
@@ -45,7 +45,7 @@ bool Thread_Queue<T>::try_pop( T & value)
 }
 
 template <typename T>
-std::shared_ptr<T> Thread_Queue<T>::wait_and_pop()
+std::shared_ptr<T> ThreadQueue<T>::wait_and_pop()
 {
 	std::unique_lock<std::mutex> lk(mx_);
 	cv_.wait(lk, [this]{ return !data_queue_.empty();});
@@ -56,7 +56,7 @@ std::shared_ptr<T> Thread_Queue<T>::wait_and_pop()
 }
 
 template <typename T>
-std::shared_ptr<T> Thread_Queue<T>::try_pop()
+std::shared_ptr<T> ThreadQueue<T>::try_pop()
 {
 	std::lock_guard<std::mutex> lk(mx_);
 	if(data_queue_.empty())
@@ -66,7 +66,7 @@ std::shared_ptr<T> Thread_Queue<T>::try_pop()
 }
 
 template <typename T>
-void Thread_Queue<T>::push(T new_value)
+void ThreadQueue<T>::push(T new_value)
 {
 	std::shared_ptr<T> data(std::make_shared<T>(std::move(new_value)));
 	std::lock_guard<std::mutex> lk(mx_);
@@ -75,7 +75,7 @@ void Thread_Queue<T>::push(T new_value)
 }
 
 template <typename T>
-bool Thread_Queue<T>::empty() 
+bool ThreadQueue<T>::empty() 
 {
 	std::lock_guard<std::mutex> lk(mx_);
 	return data_queue_.empty();
