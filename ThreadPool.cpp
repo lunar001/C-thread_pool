@@ -6,7 +6,9 @@ void ThreadPool::work_()
 	while(!tasks_.empty())/* if tasks_ is empty, waiting at here*/
 	{
 		Thread::Func task;
-		tasks_.wait_and_pop(task);
+		tasks_.wait_and_pop(task); /* work_ may hang at here and can't be over forever */
+		if(!task)
+			return;
 		task();
 	}
 }
@@ -37,6 +39,8 @@ void ThreadPool::start(int num)
 
 void ThreadPool::stop()
 {
+	/* set queue over, in case of there is some threads waiting at the wait_and_pop*/
+	tasks_.over();
 	for (auto tp : threads_)
 		tp->join();
 }

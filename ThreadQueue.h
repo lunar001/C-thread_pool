@@ -6,31 +6,45 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
+#include <atomic>
+#include "print.h"
 
 template <typename T>    
 class ThreadQueue
 {
 public:
-
+	ThreadQueue():overFlag_(false){}
 	void wait_and_pop (T & value);
 	bool try_pop(T & value);
 	std::shared_ptr<T> wait_and_pop();
 	std::shared_ptr<T> try_pop();
 	void push(T new_value);
 	bool empty();
+	void over();
 private:
 	mutable std::mutex mx_; /* mx_ must be mutable, for const member function need to access it */
 	std::queue<std::shared_ptr<T> > data_queue_;
 	std::condition_variable cv_;
+	/* overFlag_ avoid the threads use ThreadQueue wait at cv_ and can't over*/
+	std::atomic<bool> overFlag_;
 };
 
 template <typename T>
 void ThreadQueue<T>::wait_and_pop( T & value)
 {
 	std::unique_lock<std::mutex> lk(mx_);
-	cv_.wait(lk, [this] { return !data_queue_.empty();}); /* don't need check condition in while after wait*/
+	/* don't need check condition in while after wait*/
+	cv_.wait(lk, [this] { return (!data_queue_.empty() || overFlag_.load());}); 
+	if(overFlag_.load())
+	{
+		log_info("received over message\n");
+		return;
+	}
+
+
 	value = std::move(* data_queue_.front()); /* the front element will be popped soon*/
 	data_queue_.pop();
+
 }
 
 template <typename T>
@@ -48,8 +62,14 @@ template <typename T>
 std::shared_ptr<T> ThreadQueue<T>::wait_and_pop()
 {
 	std::unique_lock<std::mutex> lk(mx_);
-	cv_.wait(lk, [this]{ return !data_queue_.empty();});
-
+	/* the overFlag_ dosen't add any overlad */
+	cv_.wait(lk, [this]{ return (!data_queue_.empty() || overFlag_.load());});
+	if(overFlag_.load())
+	{
+		log_info("received over message\n");
+		return nullptr;/* There is no aviliable element any more */
+	}
+		
 	std::shared_ptr<T> res = data_queue_.front();
 	data_queue_.pop();
 	return res;
@@ -79,6 +99,15 @@ bool ThreadQueue<T>::empty()
 {
 	std::lock_guard<std::mutex> lk(mx_);
 	return data_queue_.empty();
+}
+
+template <typename T>
+void ThreadQueue<T>::over()
+{
+	/* over set overFlag_ and wake up all thread that wait and cv_ */
+	overFlag_.store(true);
+	/* wake up all thread */
+	cv_.notify_all();
 }
 
 #endif
